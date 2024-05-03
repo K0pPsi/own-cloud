@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const FileUploader = ({ onUploadSuccess }) => {
   const [file, setFile] = useState(null);
@@ -42,11 +43,25 @@ const FileUploader = ({ onUploadSuccess }) => {
   };
 
   return (
-    <div>
-      <input type="file" onChange={handleFileChange} />
-      <button onClick={handleUpload} disabled={uploading}>
-        {uploading ? "Uploading..." : "Upload File"}
-      </button>
+    <div className="container mt-4">
+      <div className="row justify-content-center">
+        <div className="col-md-6">
+          <div className="input-group mb-3">
+            <input
+              type="file"
+              className="form-control"
+              onChange={handleFileChange}
+            />
+            <button
+              className="btn btn-primary"
+              onClick={handleUpload}
+              disabled={uploading}
+            >
+              {uploading ? "Uploading..." : "Upload File"}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

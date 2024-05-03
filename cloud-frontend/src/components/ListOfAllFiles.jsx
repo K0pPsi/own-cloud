@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const ListOfAllFiles = ({ uploadCount }) => {
   const [files, setFiles] = useState([]);
@@ -24,11 +25,15 @@ const ListOfAllFiles = ({ uploadCount }) => {
   }, [uploadCount]);
 
   return (
-    <div>
-      <h1>Alle Dateien:</h1>
-      {files.map((file, index) => (
-        <p key={index}>{file}</p>
-      ))}
+    <div className="container mt-4">
+      <h1 className="mb-4">Alle Dateien:</h1>
+      <ul className="list-group">
+        {files.map((file, index) => (
+          <li key={index} className="list-group-item list-group-item-action">
+            {file}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
