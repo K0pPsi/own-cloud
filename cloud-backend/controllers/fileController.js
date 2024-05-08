@@ -29,4 +29,14 @@ function readAllFiles() {
   }
 }
 
-module.exports = { saveFile, readAllFiles };
+//delete file from the hard disk
+function deleteFile(fileName) {
+  try {
+    fs.unlink(externStoragePath + "/" + fileName);
+    return true;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+module.exports = { saveFile, readAllFiles, deleteFile };

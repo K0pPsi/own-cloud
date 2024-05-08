@@ -28,11 +28,7 @@ const FileUploader = ({ onUploadSuccess }) => {
         formData
       );
 
-      if (uploadResponse.data.success) {
-        alert(uploadResponse.data.name + uploadResponse.data.message);
-      } else {
-        alert(uploadResponse.data.message);
-      }
+      alert(uploadResponse.data.message);
 
       setUploading(false);
       onUploadSuccess(); // Call Back function to update the list

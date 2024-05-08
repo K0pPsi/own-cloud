@@ -17,8 +17,7 @@ router.post("/uploads", upload.single("file"), async (req, res) => {
 
     res.json({
       success: true,
-      message: " uploaded successfully.",
-      name: fileName,
+      message: `${fileName} uploaded successfully.`,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: "Error uploading file." });
@@ -29,6 +28,21 @@ router.post("/uploads", upload.single("file"), async (req, res) => {
 router.get("/list", (req, res) => {
   const allFiles = fileController.readAllFiles();
   res.json({ file: allFiles });
+});
+
+//delete the file - :file = is needed to delete the correct file
+router.delete("/delete/:file", async (req, res) => {
+  const fileName = req.params.file;
+  try {
+    fileController.deleteFile(fileName);
+  } catch (error) {
+    console.log(error);
+  }
+
+  res.json({
+    success: true,
+    message: `${fileName} delete successfully.`,
+  });
 });
 
 module.exports = router;

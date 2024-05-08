@@ -24,16 +24,42 @@ const ListOfAllFiles = ({ uploadCount }) => {
     fetchFiles();
   }, [uploadCount]);
 
+  //delete file from server
+  async function handleDeleteButton(file) {
+    try {
+      const response = await axios.delete(
+        `http://localhost:3000/api/files/delete/${file}`
+      );
+
+      alert(response.data.message);
+      fetchFiles();
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   return (
     <div className="container mt-4">
       <h1 className="mb-4">Alle Dateien:</h1>
-      <ul className="list-group">
+      <div className="list-group">
         {files.map((file, index) => (
-          <li key={index} className="list-group-item list-group-item-action">
-            {file}
-          </li>
+          <div key={index} className="card mb-3">
+            <div className="card-body">
+              <div className="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 className="">{file}</h6>
+                </div>
+                <button
+                  className="btn btn-danger"
+                  onClick={() => handleDeleteButton(file)}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 };
