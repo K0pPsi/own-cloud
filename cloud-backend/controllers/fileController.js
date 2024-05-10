@@ -7,10 +7,12 @@ const externStoragePath = macBookUsbPasth;
 
 ///media/kopp/3665-A632 - the path for my linux system
 
-//save the file on the hard disk
-async function saveFile(fileName, fileData) {
+//move the file data from the upload folder to the hard disk
+async function saveFile(fileName, filePathOnServer) {
   try {
-    await fs.writeFile(externStoragePath + "/" + fileName, fileData);
+    await fs.move(filePathOnServer, externStoragePath + "/" + fileName, {
+      overwrite: true,
+    });
     console.log(`${fileName} saved successfully`);
     return true;
   } catch (error) {
@@ -39,4 +41,12 @@ function deleteFile(fileName) {
   }
 }
 
-module.exports = { saveFile, readAllFiles, deleteFile };
+//download function - return the desired file back
+async function downloadFile(fileName) {
+  const filePath = externStoragePath + "/" + fileName;
+
+  const desiredFile = await fs.createReadStream(filePath);
+  return desiredFile;
+}
+
+module.exports = { saveFile, readAllFiles, deleteFile, downloadFile };

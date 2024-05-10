@@ -2,18 +2,23 @@ const express = require("express");
 const router = express.Router();
 const fileController = require("../controllers/fileController");
 const multer = require("multer");
-const upload = multer({ dest: "uploads/" });
+const macBookUsbPasth = "/Volumes/Cloud";
 
-// Upload File
+const fs = require("fs-extra");
+
+const upload = multer({
+  dest: "uploads",
+});
+
+//save the file on the server and then move it to the hard disk
 router.post("/uploads", upload.single("file"), async (req, res) => {
   const fileName = req.file.originalname;
-  //save the file on the server and then upload it to the hard disk
-  const fileData = req.file.path;
+  const filePathOnServer = req.file.path;
 
-  console.log(`${fileData} filedata`);
+  console.log(`${filePathOnServer} filedata`);
 
   try {
-    await fileController.saveFile(fileName, fileData);
+    await fileController.saveFile(fileName, filePathOnServer);
 
     res.json({
       success: true,
@@ -43,6 +48,12 @@ router.delete("/delete/:file", async (req, res) => {
     success: true,
     message: `${fileName} delete successfully.`,
   });
+});
+
+//download route to get the desired File for the Client
+router.get("/download/:file", async (req, res) => {
+  const desiredFile = await fileController.downloadFile(req.params.file);
+  desiredFile.pipe(res);
 });
 
 module.exports = router;
