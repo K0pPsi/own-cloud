@@ -1,0 +1,7 @@
+.logo {
+  transition: color 0.3s ease-in-out;
+}
+
+.logo:hover {
+  color: #007bff;
+}

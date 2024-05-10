@@ -62,7 +62,7 @@ const ListOfAllFiles = ({ uploadCount }) => {
 
   return (
     <div className="container mt-4">
-      <h1 className="mb-4">Alle Dateien:</h1>
+      <h4 className="mb-4">Alle Dateien:</h4>
       <div className="list-group">
         {files.map((filename, index) => (
           <div key={index} className="card mb-3">
