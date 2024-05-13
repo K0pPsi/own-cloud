@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
+import NewFolderModal from "./FolderModal";
 
 const FileUploader = ({ onUploadSuccess }) => {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -38,6 +40,22 @@ const FileUploader = ({ onUploadSuccess }) => {
     }
   };
 
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
+  const handleOpenModal = () => {
+    setShowModal(true);
+  };
+
+  const handleCreateFolder = async (folderName) => {
+    const response = await axios.get(
+      `http://localhost:3000/api/files/folder/${folderName}`
+    );
+
+    onUploadSuccess();
+  };
+
   return (
     <div className="container mt-4">
       <div className="row justify-content-center">
@@ -55,6 +73,16 @@ const FileUploader = ({ onUploadSuccess }) => {
             >
               {uploading ? "Uploading..." : "Upload File"}
             </button>
+            <div>
+              <button className="btn btn-dark" onClick={handleOpenModal}>
+                Ordner erstellen
+              </button>
+              <NewFolderModal
+                show={showModal}
+                handleClose={handleCloseModal}
+                handleCreateFolder={handleCreateFolder}
+              />
+            </div>
           </div>
         </div>
       </div>

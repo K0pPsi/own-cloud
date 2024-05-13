@@ -56,4 +56,22 @@ router.get("/download/:file", async (req, res) => {
   desiredFile.pipe(res);
 });
 
+//create folder route
+router.get("/folder/:foldername", async (req, res) => {
+  const foldername = req.params.foldername;
+  const createFolder = await fileController.createFolder(foldername);
+
+  if (createFolder) {
+    res.json({
+      success: true,
+      message: `Der Ordner ${foldername} wurde erfolgreich erstellt`,
+    });
+  } else {
+    res.json({
+      success: false,
+      message: `Fehler beim Erstellen des Ordners`,
+    });
+  }
+});
+
 module.exports = router;

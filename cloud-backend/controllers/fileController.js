@@ -49,4 +49,22 @@ async function downloadFile(fileName) {
   return desiredFile;
 }
 
-module.exports = { saveFile, readAllFiles, deleteFile, downloadFile };
+//create a new folder on the hard disk
+function createFolder(foldername) {
+  try {
+    fs.mkdir(externStoragePath + "/" + foldername);
+    return true;
+  } catch (error) {
+    console.log(error);
+  }
+
+  return test;
+}
+
+module.exports = {
+  saveFile,
+  readAllFiles,
+  deleteFile,
+  downloadFile,
+  createFolder,
+};
