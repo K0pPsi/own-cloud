@@ -9,6 +9,6 @@ app.use(cors());
 app.use(express.json());
 app.use("/api/files", fileRoutes);
 
-app.listen(port, (req, res) => {
+app.listen(port, () => {
   console.log("Server started on Port " + port);
 });

@@ -6,20 +6,13 @@ import "bootstrap/dist/css/bootstrap.min.css";
 const ListOfAllFiles = ({ uploadCount }) => {
   const [files, setFiles] = useState([]);
 
+  //get all files from the server
   const fetchFiles = async () => {
     try {
       const response = await axios.get("http://localhost:3000/api/files/list");
-
-      //filter Trash file
-      const visibleFiles = response.data.file.filter(
-        (file) =>
-          !file.startsWith(".") &&
-          !file.startsWith("/.") &&
-          !file.startsWith("System Volume Information")
-      );
-      setFiles(visibleFiles);
-    } catch (error) {
-      console.error("Error fetching files: ", error);
+      setFiles(response.data.data);
+    } catch (err) {
+      console.error(`Error fetching files: ${err}`);
     }
   };
 
@@ -29,23 +22,27 @@ const ListOfAllFiles = ({ uploadCount }) => {
   }, [uploadCount]);
 
   //delete file from server
-  async function handleDeleteButton(filename) {
+  async function handleDeleteButton(id, filename, filepath) {
     try {
       const response = await axios.delete(
-        `http://localhost:3000/api/files/delete/${filename}`
+        `http://localhost:3000/api/files/delete/${id}`,
+        {
+          params: { filepath },
+        }
       );
 
-      alert(response.data.message);
+      alert(`${filename} ${response.data.message}`);
       fetchFiles();
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      console.log(err);
+      alert("Error to delte file");
     }
   }
 
   //recive the file from server and download it on client side
-  async function handleDownloadButton(filename) {
+  async function handleDownloadButton(id, filename) {
     const response = await axios.get(
-      `http://localhost:3000/api/files/download/${filename}`,
+      `http://localhost:3000/api/files/download/${id}`,
       // The option '{ responseType: "blob" }' is necessary to receive the data as Blob data.
       { responseType: "blob" }
     );
@@ -64,24 +61,26 @@ const ListOfAllFiles = ({ uploadCount }) => {
     <div className="container mt-4">
       <h4 className="mb-4">Alle Dateien:</h4>
       <div className="list-group">
-        {files.map((filename, index) => (
-          <div key={index} className="card mb-3">
+        {files.map((file) => (
+          <div key={file.id} className="card mb-3">
             <div className="card-body">
               <div className="d-flex justify-content-between align-items-center">
                 <div>
-                  <h6 className="">{filename}</h6>
+                  <h6 className="">{file.filename}</h6>
                 </div>
                 <div className="d-flex gap-2">
                   <button
                     className="btn btn-danger"
-                    onClick={() => handleDeleteButton(filename)}
+                    onClick={() =>
+                      handleDeleteButton(file.id, file.filename, file.filepath)
+                    }
                   >
                     Delete
                   </button>
                   <button
                     className="btn btn-warning"
                     onClick={() => {
-                      handleDownloadButton(filename);
+                      handleDownloadButton(file.id, file.filename);
                     }}
                   >
                     Download

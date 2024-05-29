@@ -31,29 +31,12 @@ const FileUploader = ({ onUploadSuccess }) => {
       );
 
       alert(uploadResponse.data.message);
-
+      onUploadSuccess();
       setUploading(false);
-      onUploadSuccess(); // Call Back function to update the list
     } catch (e) {
       console.log("Error: " + e);
       setUploading(false);
     }
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-  };
-
-  const handleOpenModal = () => {
-    setShowModal(true);
-  };
-
-  const handleCreateFolder = async (folderName) => {
-    const response = await axios.get(
-      `http://localhost:3000/api/files/folder/${folderName}`
-    );
-
-    onUploadSuccess();
   };
 
   return (
@@ -73,16 +56,6 @@ const FileUploader = ({ onUploadSuccess }) => {
             >
               {uploading ? "Uploading..." : "Upload File"}
             </button>
-            <div>
-              <button className="btn btn-dark" onClick={handleOpenModal}>
-                Ordner erstellen
-              </button>
-              <NewFolderModal
-                show={showModal}
-                handleClose={handleCloseModal}
-                handleCreateFolder={handleCreateFolder}
-              />
-            </div>
           </div>
         </div>
       </div>

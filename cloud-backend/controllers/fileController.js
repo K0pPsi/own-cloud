@@ -1,70 +1,82 @@
+const db = require("../db");
 const fs = require("fs-extra");
+const moment = require("moment");
 
-//only a path to test the code on my macbook
-const macBookUsbPasth = "/Volumes/Cloud";
+function uploadSingleFile(fileData) {
+  const fileType = fileData.originalname.split(".").pop();
+  const currentDate = moment().format("DD-MM-YYYY");
 
-const externStoragePath = macBookUsbPasth;
+  //save metadata in an array for the database entry
+  const params = [
+    fileData.originalname,
+    fileType,
+    fileData.size,
+    fileData.path,
+    currentDate,
+  ];
 
-///media/kopp/3665-A632 - the path for my linux system
+  //insert metadata into the database
+  db.run(
+    "INSERT INTO files (filename, filetype, filesize, filepath, date) VALUES (?, ?, ?, ?, ?)",
+    params,
+    (err) => {
+      if (err) {
+        console.log(`Error to upload metadata: ${err}`);
+      }
+    }
+  );
+}
 
-//move the file data from the upload folder to the hard disk
-async function saveFile(fileName, filePathOnServer) {
-  try {
-    await fs.move(filePathOnServer, externStoragePath + "/" + fileName, {
-      overwrite: true,
+//read all files from the database and return it
+function readAllData() {
+  return new Promise((resolve, reject) => {
+    //select all files
+    db.all("SELECT * FROM files", [], (err, rows) => {
+      if (err) {
+        console.log(`Error cannot read files: ${err}`);
+        reject(err);
+      } else {
+        resolve(rows);
+      }
     });
-    console.log(`${fileName} saved successfully`);
-    return true;
-  } catch (error) {
-    console.log("Error saving file: ", error);
-    return false;
-  }
+  });
 }
 
-//read all files from the hard disk
-function readAllFiles() {
+//delete metadata from database and the file from the hard disk
+async function deleteFile(id, filepath) {
   try {
-    const allFiles = fs.readdirSync(externStoragePath);
-    return allFiles;
-  } catch (e) {
-    console.log("Fail to read files: " + e);
+    //delete file
+    await fs.unlink(filepath);
+    console.log(`File ${filepath} successful deleted`);
+
+    // delete metadata from database
+    await new Promise((resolve, reject) => {
+      db.run("DELETE FROM files WHERE ID = ?", [id], function (err) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+    console.log(`databaseentry with the  id ${id} successfully deleted`);
+  } catch (err) {
+    console.error("Error to delte file", err);
   }
 }
 
-//delete file from the hard disk
-function deleteFile(fileName) {
-  try {
-    fs.unlink(externStoragePath + "/" + fileName);
-    return true;
-  } catch (error) {
-    console.log(error);
-  }
+//select the desired file and return it
+function downloadData(id) {
+  return new Promise((resolve, reject) => {
+    //select file via id
+    db.all("SELECT * From files WHERE id = ? ", [id], (err, rows) => {
+      if (err) {
+        console.log("ERROR: " + err);
+      } else {
+        resolve(rows);
+      }
+    });
+  });
 }
 
-//download function - return the desired file back
-async function downloadFile(fileName) {
-  const filePath = externStoragePath + "/" + fileName;
-
-  const desiredFile = await fs.createReadStream(filePath);
-  return desiredFile;
-}
-
-//create a new folder on the hard disk
-function createFolder(foldername) {
-  try {
-    fs.mkdir(externStoragePath + "/" + foldername);
-    return true;
-  } catch (error) {
-    console.log(error);
-  }
-
-  return test;
-}
-
-module.exports = {
-  saveFile,
-  readAllFiles,
-  deleteFile,
-  downloadFile,
-  createFolder,
-};
+module.exports = { uploadSingleFile, readAllData, downloadData, deleteFile };

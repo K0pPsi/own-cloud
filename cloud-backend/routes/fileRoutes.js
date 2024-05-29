@@ -2,76 +2,59 @@ const express = require("express");
 const router = express.Router();
 const fileController = require("../controllers/fileController");
 const multer = require("multer");
-const macBookUsbPasth = "/Volumes/Cloud";
-
 const fs = require("fs-extra");
 
+//dev path for macbook
+const macBookUsbPasth = "/Volumes/Cloud";
+//storagepath
 const upload = multer({
-  dest: "uploads",
+  dest: macBookUsbPasth,
 });
 
-//save the file on the server and then move it to the hard disk
+//route to upload single file
 router.post("/uploads", upload.single("file"), async (req, res) => {
-  const fileName = req.file.originalname;
-  const filePathOnServer = req.file.path;
-
-  console.log(`${filePathOnServer} filedata`);
+  //save file data from client
+  const fileData = req.file;
 
   try {
-    await fileController.saveFile(fileName, filePathOnServer);
-
-    res.json({
-      success: true,
-      message: `${fileName} uploaded successfully.`,
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Error uploading file." });
+    await fileController.uploadSingleFile(fileData);
+    res.json({ success: true, message: "uploaded successfully" });
+  } catch (err) {
+    console.log(`Error to upload file ${err}`);
   }
 });
 
-//send all files to the frontend
-router.get("/list", (req, res) => {
-  const allFiles = fileController.readAllFiles();
-  res.json({ file: allFiles });
-});
-
-//delete the file - :file = is needed to delete the correct file
-router.delete("/delete/:file", async (req, res) => {
-  const fileName = req.params.file;
+//route to get all files information from the database
+router.get("/list", async (req, res) => {
   try {
-    fileController.deleteFile(fileName);
-  } catch (error) {
-    console.log(error);
+    const response = await fileController.readAllData();
+    res.json({ success: true, data: response });
+  } catch (err) {
+    console.error(`Error fetching data: ${err}`);
+    res
+      //500 = server error
+      .status(500)
+      .json({ success: false, message: "Error querying the database" });
   }
-
-  res.json({
-    success: true,
-    message: `${fileName} delete successfully.`,
-  });
 });
 
-//download route to get the desired File for the Client
-router.get("/download/:file", async (req, res) => {
-  const desiredFile = await fileController.downloadFile(req.params.file);
+//route to delete metadata and file from hard disk
+router.delete("/delete/:id", async (req, res) => {
+  try {
+    fileController.deleteFile(req.params.id, req.query.filepath);
+    res.json({ success: true, message: `delete successfull` });
+  } catch (err) {
+    console.log(`Error deleting the file: ${err}`);
+    res.json({ success: false, message: `Error deleting file` });
+  }
+});
+
+//route to download file from server
+router.get("/download/:id", async (req, res) => {
+  const response = await fileController.downloadData(req.params.id);
+
+  const desiredFile = await fs.createReadStream(response[0].filepath);
   desiredFile.pipe(res);
-});
-
-//create folder route
-router.get("/folder/:foldername", async (req, res) => {
-  const foldername = req.params.foldername;
-  const createFolder = await fileController.createFolder(foldername);
-
-  if (createFolder) {
-    res.json({
-      success: true,
-      message: `Der Ordner ${foldername} wurde erfolgreich erstellt`,
-    });
-  } else {
-    res.json({
-      success: false,
-      message: `Fehler beim Erstellen des Ordners`,
-    });
-  }
 });
 
 module.exports = router;
