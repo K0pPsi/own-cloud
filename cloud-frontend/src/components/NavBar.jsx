@@ -3,7 +3,7 @@ import "../styles/NavBar.css";
 
 const NavBar = () => {
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-light">
+    <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
       <div className="container">
         <a className="navbar-brand" href="#">
           <span className="logo">Own-Cloud</span>

@@ -60,37 +60,54 @@ const ListOfAllFiles = ({ uploadCount }) => {
   return (
     <div className="container mt-4">
       <h4 className="mb-4">Alle Dateien:</h4>
-      <div className="list-group">
-        {files.map((file) => (
-          <div key={file.id} className="card mb-3">
-            <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <h6 className="">{file.filename}</h6>
-                </div>
-                <div className="d-flex gap-2">
+      <table className="table table-hover">
+        <thead>
+          <tr className="">
+            <th scope="col">Dateiname</th>
+            <th scope="col">Hochgeladen am</th>
+            <th className="text-center" scope="col">
+              Aktionen
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {files.map((file) => (
+            <tr key={file.id}>
+              <td>{file.filename}</td>
+              <td>{file.date}</td>
+              <td className="text-center">
+                <div aria-label="Aktionen">
                   <button
-                    className="btn btn-danger"
+                    type="button"
+                    className="btn btn-danger btn me-2"
                     onClick={() =>
                       handleDeleteButton(file.id, file.filename, file.filepath)
                     }
                   >
-                    Delete
+                    Löschen
                   </button>
                   <button
-                    className="btn btn-warning"
+                    type="button"
+                    className="btn btn-warning btn me-2"
                     onClick={() => {
                       handleDownloadButton(file.id, file.filename);
                     }}
                   >
-                    Download
+                    Herunterladen
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary "
+                    onClick={handleRenameButton()}
+                  >
+                    Umbenennen
                   </button>
                 </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

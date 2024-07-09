@@ -1,23 +1,18 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import NewFolderModal from "./FolderModal";
+import "../styles/FileUploader.css";
 
 const FileUploader = ({ onUploadSuccess }) => {
-  const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [showModal, setShowModal] = useState(false);
-
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
+  const [isOpen, setIsOpen] = useState(false);
 
   //post function to upload the file
-  const handleUpload = async () => {
-    if (!file) {
-      alert("You must select a file");
-      return;
-    }
+  const handleUpload = async (e) => {
+    const file = e.target.files[0];
 
     try {
       setUploading(true);
@@ -39,25 +34,54 @@ const FileUploader = ({ onUploadSuccess }) => {
     }
   };
 
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+    console.log("Test");
+  };
+
   return (
-    <div className="container mt-4">
-      <div className="row justify-content-center">
-        <div className="col-md-6">
-          <div className="input-group mb-3">
-            <input
-              type="file"
-              className="form-control"
-              onChange={handleFileChange}
-            />
-            <button
-              className="btn btn-primary"
-              onClick={handleUpload}
-              disabled={uploading}
+    <div className="d-flex justify-content-center mt-5">
+      <div className="dropdown">
+        <button
+          className="btn btn-lg btn-outline-primary custom-btn dropdown-toggle"
+          type="button"
+          id="dropdownMenuButton"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+        >
+          Neu
+        </button>
+        <ul
+          className="dropdown-menu custom-dropdown-menu"
+          aria-labelledby="dropdownMenuButton"
+        >
+          <li>
+            <label
+              className="dropdown-item custom-dropdown-item"
+              style={{ cursor: "pointer" }}
             >
-              {uploading ? "Uploading..." : "Upload File"}
-            </button>
-          </div>
-        </div>
+              Datei hochladen
+              <input
+                type="file"
+                style={{ display: "none" }}
+                onChange={handleUpload}
+              />
+            </label>
+          </li>
+          <li>
+            <label
+              className="dropdown-item custom-dropdown-item"
+              style={{ cursor: "pointer" }}
+            >
+              Ordner hochladen
+              <input
+                type="file"
+                style={{ display: "none" }}
+                onChange={handleUpload}
+              />
+            </label>
+          </li>
+        </ul>
       </div>
     </div>
   );
