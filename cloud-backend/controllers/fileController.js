@@ -79,4 +79,28 @@ function downloadData(id) {
   });
 }
 
-module.exports = { uploadSingleFile, readAllData, downloadData, deleteFile };
+//select the desired file and change the name
+function renameFile(newFileName, fileId) {
+  return new Promise((resolve, reject) => {
+    db.run(
+      "UPDATE files SET filename = ? WHERE id = ?",
+      [newFileName, fileId],
+      (err, rows) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          resolve({ messsage: "succefully renmae the file" });
+        }
+      }
+    );
+  });
+}
+
+module.exports = {
+  uploadSingleFile,
+  readAllData,
+  downloadData,
+  deleteFile,
+  renameFile,
+};

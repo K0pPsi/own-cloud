@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { saveAs } from "file-saver";
 import "bootstrap/dist/css/bootstrap.min.css";
+import RenameModal from "./modal/RenameModal";
 
 const ListOfAllFiles = ({ uploadCount }) => {
   const [files, setFiles] = useState([]);
+  const [fileData, setFileData] = useState([]);
 
-  //get all files from the server
+  // Fetch all files from the server
   const fetchFiles = async () => {
     try {
       const response = await axios.get("http://localhost:3000/api/files/list");
@@ -16,12 +18,12 @@ const ListOfAllFiles = ({ uploadCount }) => {
     }
   };
 
-  //when the uploadCount variable was changed the function fetchFiles is running
+  // When the uploadCount variable changes, fetchFiles is called
   useEffect(() => {
     fetchFiles();
   }, [uploadCount]);
 
-  //delete file from server
+  // Delete file from server
   async function handleDeleteButton(id, filename, filepath) {
     try {
       const response = await axios.delete(
@@ -35,26 +37,28 @@ const ListOfAllFiles = ({ uploadCount }) => {
       fetchFiles();
     } catch (err) {
       console.log(err);
-      alert("Error to delte file");
+      alert("Error deleting file");
     }
   }
 
-  //recive the file from server and download it on client side
+  // Receive the file from server and download it on the client side
   async function handleDownloadButton(id, filename) {
-    const response = await axios.get(
-      `http://localhost:3000/api/files/download/${id}`,
-      // The option '{ responseType: "blob" }' is necessary to receive the data as Blob data.
-      { responseType: "blob" }
-    );
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/api/files/download/${id}`,
+        { responseType: "blob" }
+      );
 
-    //blob (binary large object) is used to store  data recived from the server
-    const blob = new Blob([response.data]);
+      const blob = new Blob([response.data]);
+      const url = window.URL.createObjectURL(blob);
+      saveAs(url, filename);
+    } catch (err) {
+      console.error(`Error downloading file: ${err}`);
+    }
+  }
 
-    //create an url that represents the blob data as if it were hosted from the server
-    const url = window.URL.createObjectURL(blob);
-
-    //npm package - file saver is used to download the data from the url
-    saveAs(url, filename);
+  function handleRenameButton(file) {
+    setFileData(file);
   }
 
   return (
@@ -62,7 +66,7 @@ const ListOfAllFiles = ({ uploadCount }) => {
       <h4 className="mb-4">Alle Dateien:</h4>
       <table className="table table-hover">
         <thead>
-          <tr className="">
+          <tr>
             <th scope="col">Dateiname</th>
             <th scope="col">Hochgeladen am</th>
             <th className="text-center" scope="col">
@@ -97,8 +101,10 @@ const ListOfAllFiles = ({ uploadCount }) => {
                   </button>
                   <button
                     type="button"
-                    className="btn btn-secondary "
-                    onClick={handleRenameButton()}
+                    className="btn btn-secondary"
+                    onClick={() => handleRenameButton(file)}
+                    data-bs-toggle="modal"
+                    data-bs-target="#renameModal"
                   >
                     Umbenennen
                   </button>
@@ -108,6 +114,7 @@ const ListOfAllFiles = ({ uploadCount }) => {
           ))}
         </tbody>
       </table>
+      <RenameModal fileData={fileData} fetchFiles={fetchFiles} />
     </div>
   );
 };

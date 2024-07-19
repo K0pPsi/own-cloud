@@ -57,4 +57,17 @@ router.get("/download/:id", async (req, res) => {
   desiredFile.pipe(res);
 });
 
+//route to rename the file in the database
+router.patch("/rename/:id", async (req, res) => {
+  const newFileName = req.body.params.newFileName;
+  const fileId = req.body.params.fileData.id;
+
+  try {
+    await fileController.renameFile(newFileName, fileId);
+    res.json({ success: true });
+  } catch (e) {
+    console.log(e);
+  }
+});
+
 module.exports = router;
