@@ -1,6 +1,7 @@
 const db = require("../db");
 const fs = require("fs-extra");
 const moment = require("moment");
+const path = require("path");
 
 function uploadSingleFile(fileData) {
   const fileType = fileData.originalname.split(".").pop();
@@ -97,10 +98,34 @@ function renameFile(newFileName, fileId) {
   });
 }
 
+//create a new folder on the storage
+function createFolder(macBookUsbPasth, folderName) {
+  let message;
+
+  //set the whole path
+  const directory = path.join(macBookUsbPasth, folderName);
+
+  try {
+    //check if the folder already exists
+    if (!fs.existsSync(directory)) {
+      fs.mkdirSync(directory);
+      console.log(`${directory} wurde erstellt`);
+      message = `Der Ordner ${directory} wurde erfolgreich erstellt.`;
+    } else {
+      message = `Der Ordner ${directory} exisitiert bereits`;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+
+  return message;
+}
+
 module.exports = {
   uploadSingleFile,
   readAllData,
   downloadData,
   deleteFile,
   renameFile,
+  createFolder,
 };

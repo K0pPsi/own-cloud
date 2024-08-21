@@ -70,4 +70,17 @@ router.patch("/rename/:id", async (req, res) => {
   }
 });
 
+router.post("/create", async (req, res) => {
+  const folderName = req.body.params.folderName;
+  try {
+    const resultMessage = await fileController.createFolder(
+      macBookUsbPasth,
+      folderName
+    );
+    res.json({ message: resultMessage });
+  } catch (e) {
+    console.log(e);
+  }
+});
+
 module.exports = router;

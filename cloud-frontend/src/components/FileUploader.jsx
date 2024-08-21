@@ -1,14 +1,10 @@
 import React, { useState } from "react";
 import axios from "axios";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.min.js";
-import NewFolderModal from "./FolderModal";
 import "../styles/FileUploader.css";
+import CreateFolderModal from "./modal/CreateFolderModal";
 
 const FileUploader = ({ onUploadSuccess }) => {
   const [uploading, setUploading] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
 
   //post function to upload the file
   const handleUpload = async (e) => {
@@ -34,9 +30,10 @@ const FileUploader = ({ onUploadSuccess }) => {
     }
   };
 
-  const toggleDropdown = () => {
-    setIsOpen(!isOpen);
-    console.log("Test");
+  const handleCreateFolder = async () => {
+    const response = await axios.post("http://localhost:3000/api/files/create");
+
+    console.log(response);
   };
 
   return (
@@ -70,19 +67,17 @@ const FileUploader = ({ onUploadSuccess }) => {
           </li>
           <li>
             <label
+              data-bs-toggle="modal"
+              data-bs-target="#createFolderModal"
               className="dropdown-item custom-dropdown-item"
               style={{ cursor: "pointer" }}
             >
-              Ordner hochladen
-              <input
-                type="file"
-                style={{ display: "none" }}
-                onChange={handleUpload}
-              />
+              Ordner erstellen
             </label>
           </li>
         </ul>
       </div>
+      <CreateFolderModal />
     </div>
   );
 };
