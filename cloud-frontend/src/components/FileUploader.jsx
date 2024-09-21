@@ -48,7 +48,7 @@ const FileUploader = ({ onUploadSuccess }) => {
           />
         </label>
       </div>
-      <CreateFolderModal />
+      <CreateFolderModal onUploadSuccess={onUploadSuccess} />
     </div>
   );
 };

@@ -43,14 +43,34 @@ function readAllData() {
   });
 }
 
-//delete metadata from database and the file from the hard disk
-async function deleteFile(id, filepath) {
+async function deleteFile(id, filepath, filetype) {
   try {
-    //delete file
-    await fs.unlink(filepath);
-    console.log(`File ${filepath} successful deleted`);
+    // Checks if the file path exists and is accessible
+    await fs.access(filepath);
 
-    // delete metadata from database
+    // delete folder or file
+    if (filetype === "folder") {
+      await fs.rm(filepath, { recursive: true, force: true });
+    } else {
+      await fs.unlink(filepath);
+    }
+    console.log(
+      `${
+        filetype === "folder" ? "Folder" : "File"
+      } ${filepath} successfully deleted`
+    );
+  } catch (error) {
+    console.error(
+      `Error deleting ${
+        filetype === "folder" ? "folder" : "file"
+      } ${filepath}:`,
+      error
+    );
+    return;
+  }
+
+  try {
+    // delete database entry
     await new Promise((resolve, reject) => {
       db.run("DELETE FROM files WHERE ID = ?", [id], function (err) {
         if (err) {
@@ -60,13 +80,13 @@ async function deleteFile(id, filepath) {
         }
       });
     });
-    console.log(`databaseentry with the  id ${id} successfully deleted`);
+    console.log(`Database entry with the id ${id} successfully deleted`);
   } catch (err) {
-    console.error("Error to delte file", err);
+    console.error("Error deleting metadata from database", err);
   }
 }
 
-//select the desired file and return it
+//select the desired file or folder and return it
 function downloadData(id) {
   return new Promise((resolve, reject) => {
     //select file via id

@@ -3,7 +3,7 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import axios from "axios";
 import { useState } from "react";
 
-const CreateFolderModal = () => {
+const CreateFolderModal = ({ onUploadSuccess }) => {
   const [folderName, setFolderName] = useState("");
 
   const handleSave = async () => {
@@ -17,6 +17,7 @@ const CreateFolderModal = () => {
       }
     );
 
+    onUploadSuccess(); // Refreshes the view of files and folders to ensure all new data is displayed.
     console.log(response);
   };
 

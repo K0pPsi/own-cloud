@@ -3,6 +3,7 @@ const router = express.Router();
 const fileController = require("../controllers/fileController");
 const multer = require("multer");
 const fs = require("fs-extra");
+const archiver = require("archiver");
 
 //dev path for macbook
 const macBookUsbPasth = "/Volumes/Cloud/Home";
@@ -41,7 +42,11 @@ router.get("/list", async (req, res) => {
 //route to delete metadata and file from hard disk
 router.delete("/delete/:id", async (req, res) => {
   try {
-    fileController.deleteFile(req.params.id, req.query.filepath);
+    fileController.deleteFile(
+      req.params.id,
+      req.query.filepath,
+      req.query.filetype
+    );
     res.json({ success: true, message: `delete successfull` });
   } catch (err) {
     console.log(`Error deleting the file: ${err}`);
@@ -49,12 +54,48 @@ router.delete("/delete/:id", async (req, res) => {
   }
 });
 
-//route to download file from server
+// Route to download a file
 router.get("/download/:id", async (req, res) => {
   const response = await fileController.downloadData(req.params.id);
 
-  const desiredFile = await fs.createReadStream(response[0].filepath);
-  desiredFile.pipe(res);
+  if (!response || response.length === 0) {
+    return res.status(404).send("File not found");
+  }
+
+  const file = response[0];
+
+  if (file.filetype === "folder") {
+    // If it's a folder, zip it and send
+    const folderPath = file.filepath;
+
+    // Set the headers to indicate a zip file download
+    res.setHeader("Content-Type", "application/zip");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=${file.filename}.zip`
+    );
+
+    const archive = archiver("zip", {
+      zlib: { level: 9 }, // Compression level
+    });
+
+    archive.on("error", function (err) {
+      throw err;
+    });
+
+    // Pipe the archive to the response
+    archive.pipe(res);
+
+    // Append files from the folder
+    archive.directory(folderPath, false);
+
+    // Finalize the archive
+    await archive.finalize();
+  } else {
+    // If it's a file, send the file as before
+    const desiredFile = await fs.createReadStream(file.filepath);
+    desiredFile.pipe(res);
+  }
 });
 
 //route to rename the file in the database

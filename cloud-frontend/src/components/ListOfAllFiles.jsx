@@ -22,11 +22,11 @@ const ListOfAllFiles = ({ uploadCount }) => {
     fetchFiles();
   }, [uploadCount]);
 
-  async function handleDeleteButton(id, filename, filepath) {
+  async function handleDeleteButton(id, filename, filepath, filetype) {
     try {
       const response = await axios.delete(
         `http://localhost:3000/api/files/delete/${id}`,
-        { params: { filepath } }
+        { params: { filepath, filetype } }
       );
 
       alert(`${filename} ${response.data.message}`);
@@ -37,16 +37,24 @@ const ListOfAllFiles = ({ uploadCount }) => {
     }
   }
 
-  async function handleDownloadButton(id, filename) {
+  async function handleDownloadButton(id, filename, filetype) {
     try {
       const response = await axios.get(
         `http://localhost:3000/api/files/download/${id}`,
         { responseType: "blob" }
       );
 
-      const blob = new Blob([response.data]);
+      const blob = new Blob([response.data], {
+        type:
+          filetype === "folder"
+            ? "application/zip"
+            : "application/octet-stream",
+      });
+
       const url = window.URL.createObjectURL(blob);
-      saveAs(url, filename);
+      // If it's a folder, save as .zip, otherwise use the file's original name
+      const extension = filetype === "folder" ? ".zip" : "";
+      saveAs(url, `${filename}${extension}`);
     } catch (err) {
       console.error(`Error downloading file: ${err}`);
     }
@@ -80,7 +88,12 @@ const ListOfAllFiles = ({ uploadCount }) => {
                     type="button"
                     className="btn btn-danger me-2"
                     onClick={() =>
-                      handleDeleteButton(file.id, file.filename, file.filepath)
+                      handleDeleteButton(
+                        file.id,
+                        file.filename,
+                        file.filepath,
+                        file.filetype
+                      )
                     }
                   >
                     Löschen
@@ -88,7 +101,13 @@ const ListOfAllFiles = ({ uploadCount }) => {
                   <button
                     type="button"
                     className="btn btn-warning me-2"
-                    onClick={() => handleDownloadButton(file.id, file.filename)}
+                    onClick={() =>
+                      handleDownloadButton(
+                        file.id,
+                        file.filename,
+                        file.filetype
+                      )
+                    }
                   >
                     Herunterladen
                   </button>
