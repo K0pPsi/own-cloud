@@ -1,46 +1,13 @@
-/* NavBar.css */
-
-body {
-  background-color: #f8f9fa; /* Optional: Light grey background for the whole page */
-}
-
-.navbar {
-  background-color: #ffffff; /* White background for the navbar */
-  border-bottom: 2px solid #007bff; /* Blue border at the bottom */
-}
-
-.navbar-brand {
-  font-size: 1.5rem;
-  color: #007bff;
+.logo {
   font-weight: bold;
-}
-
-.navbar-brand .logo {
-  transition: color 0.3s ease-in-out;
-}
-
-.navbar-brand .logo:hover {
-  color: #0056b3; /* Darker blue on hover */
+  font-size: 1.5rem;
+  color: #1a73e8;
 }
 
 .nav-link {
-  color: #007bff;
-  transition: color 0.3s ease-in-out;
+  color: #5f6368;
 }
 
 .nav-link:hover {
-  color: #0056b3; /* Darker blue on hover */
-}
-
-.navbar-toggler {
-  border: none;
-}
-
-.navbar-toggler-icon {
-  color: #007bff; /* Blue color for the toggler icon */
-}
-
-.nav-item.active .nav-link {
-  font-weight: bold;
-  color: #0056b3; /* Darker blue for the active link */
+  color: #1a73e8;
 }

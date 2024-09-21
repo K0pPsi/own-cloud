@@ -1,29 +1,29 @@
-/* FileUploader.css */
+.file-uploader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
 
-/* Custom styling for the 'Neu' button */
+.upload-area {
+  display: flex;
+  gap: 10px;
+}
+
 .custom-btn {
-  font-size: 1rem; /* Larger font size */
-  padding: 1.2rem 7em; /* Larger padding for a bigger button */
-  border: 2px dotted #007bff; /* Dotted border with blue color */
-  width: 100%; /* Ensure full width in its container */
+  background-color: #1a73e8;
+  color: white;
+  border-radius: 4px;
 }
 
-/* Custom styling for the dropdown menu */
-.custom-dropdown-menu {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Light shadow for the dropdown menu */
-  font-size: 0.8rem; /* Larger font size */
-  text-align: center;
-  width: 100%; /* Ensure the menu takes the full width of the button */
+.custom-upload-btn {
+  background-color: white;
+  color: #1a73e8;
+  border: 2px solid #1a73e8;
+  border-radius: 4px;
+  padding: 10px 20px;
 }
 
-/* Custom styling for the dropdown items */
-.custom-dropdown-item {
-  font-size: 0.8rem; /* Standard font size for dropdown items */
-  padding: 0.5rem 1rem; /* Standard padding for dropdown items */
-  transition: background-color 0.3s ease-in-out; /* Smooth transition for hover effect */
-  width: 100%; /* Ensure items take the full width of the menu */
-}
-
-.custom-dropdown-item:hover {
-  background-color: #e9ecef; /* Light grey background on hover */
+.custom-upload-btn:hover {
+  background-color: #e8f0fe;
 }

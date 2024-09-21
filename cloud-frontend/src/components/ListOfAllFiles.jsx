@@ -3,12 +3,12 @@ import axios from "axios";
 import { saveAs } from "file-saver";
 import "bootstrap/dist/css/bootstrap.min.css";
 import RenameModal from "./modal/RenameModal";
+import "../styles/ListOfAllFiles.css"; // Neue CSS-Datei
 
 const ListOfAllFiles = ({ uploadCount }) => {
   const [files, setFiles] = useState([]);
   const [fileData, setFileData] = useState([]);
 
-  // Fetch all files from the server
   const fetchFiles = async () => {
     try {
       const response = await axios.get("http://localhost:3000/api/files/list");
@@ -18,19 +18,15 @@ const ListOfAllFiles = ({ uploadCount }) => {
     }
   };
 
-  // When the uploadCount variable changes, fetchFiles is called
   useEffect(() => {
     fetchFiles();
   }, [uploadCount]);
 
-  // Delete file from server
   async function handleDeleteButton(id, filename, filepath) {
     try {
       const response = await axios.delete(
         `http://localhost:3000/api/files/delete/${id}`,
-        {
-          params: { filepath },
-        }
+        { params: { filepath } }
       );
 
       alert(`${filename} ${response.data.message}`);
@@ -41,7 +37,6 @@ const ListOfAllFiles = ({ uploadCount }) => {
     }
   }
 
-  // Receive the file from server and download it on the client side
   async function handleDownloadButton(id, filename) {
     try {
       const response = await axios.get(
@@ -64,26 +59,26 @@ const ListOfAllFiles = ({ uploadCount }) => {
   return (
     <div className="container mt-4">
       <h4 className="mb-4">Alle Dateien:</h4>
-      <table className="table table-hover">
-        <thead>
-          <tr>
-            <th scope="col">Dateiname</th>
-            <th scope="col">Hochgeladen am</th>
-            <th className="text-center" scope="col">
-              Aktionen
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {files.map((file) => (
-            <tr key={file.id}>
-              <td>{file.filename}</td>
-              <td>{file.date}</td>
-              <td className="text-center">
-                <div aria-label="Aktionen">
+      <div className="table-responsive custom-table">
+        <table className="table table-hover">
+          <thead>
+            <tr>
+              <th scope="col">Dateiname</th>
+              <th scope="col">Hochgeladen am</th>
+              <th className="text-center" scope="col">
+                Aktionen
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {files.map((file) => (
+              <tr key={file.id}>
+                <td>{file.filename}</td>
+                <td>{file.date}</td>
+                <td className="text-center">
                   <button
                     type="button"
-                    className="btn btn-danger btn me-2"
+                    className="btn btn-danger me-2"
                     onClick={() =>
                       handleDeleteButton(file.id, file.filename, file.filepath)
                     }
@@ -92,10 +87,8 @@ const ListOfAllFiles = ({ uploadCount }) => {
                   </button>
                   <button
                     type="button"
-                    className="btn btn-warning btn me-2"
-                    onClick={() => {
-                      handleDownloadButton(file.id, file.filename);
-                    }}
+                    className="btn btn-warning me-2"
+                    onClick={() => handleDownloadButton(file.id, file.filename)}
                   >
                     Herunterladen
                   </button>
@@ -108,12 +101,12 @@ const ListOfAllFiles = ({ uploadCount }) => {
                   >
                     Umbenennen
                   </button>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       <RenameModal fileData={fileData} fetchFiles={fetchFiles} />
     </div>
   );

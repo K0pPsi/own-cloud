@@ -6,13 +6,11 @@ import CreateFolderModal from "./modal/CreateFolderModal";
 const FileUploader = ({ onUploadSuccess }) => {
   const [uploading, setUploading] = useState(false);
 
-  //post function to upload the file
   const handleUpload = async (e) => {
     const file = e.target.files[0];
 
     try {
       setUploading(true);
-
       const formData = new FormData();
       formData.append("file", file);
 
@@ -30,52 +28,25 @@ const FileUploader = ({ onUploadSuccess }) => {
     }
   };
 
-  const handleCreateFolder = async () => {
-    const response = await axios.post("http://localhost:3000/api/files/create");
-
-    console.log(response);
-  };
-
   return (
-    <div className="d-flex justify-content-center mt-5">
-      <div className="dropdown">
+    <div className="file-uploader-container">
+      <div className="upload-area">
         <button
-          className="btn btn-lg btn-outline-primary custom-btn dropdown-toggle"
+          className="btn btn-primary custom-btn"
           type="button"
-          id="dropdownMenuButton"
-          data-bs-toggle="dropdown"
-          aria-expanded="false"
+          data-bs-toggle="modal"
+          data-bs-target="#createFolderModal"
         >
-          Neu
+          Ordner erstellen
         </button>
-        <ul
-          className="dropdown-menu custom-dropdown-menu"
-          aria-labelledby="dropdownMenuButton"
-        >
-          <li>
-            <label
-              className="dropdown-item custom-dropdown-item"
-              style={{ cursor: "pointer" }}
-            >
-              Datei hochladen
-              <input
-                type="file"
-                style={{ display: "none" }}
-                onChange={handleUpload}
-              />
-            </label>
-          </li>
-          <li>
-            <label
-              data-bs-toggle="modal"
-              data-bs-target="#createFolderModal"
-              className="dropdown-item custom-dropdown-item"
-              style={{ cursor: "pointer" }}
-            >
-              Ordner erstellen
-            </label>
-          </li>
-        </ul>
+        <label className="btn btn-outline-primary custom-upload-btn">
+          Datei hochladen
+          <input
+            type="file"
+            style={{ display: "none" }}
+            onChange={handleUpload}
+          />
+        </label>
       </div>
       <CreateFolderModal />
     </div>

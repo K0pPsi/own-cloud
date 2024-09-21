@@ -2,10 +2,10 @@ const db = require("../db");
 const fs = require("fs-extra");
 const moment = require("moment");
 const path = require("path");
+const currentDate = moment().format("DD-MM-YYYY");
 
 function uploadSingleFile(fileData) {
   const fileType = fileData.originalname.split(".").pop();
-  const currentDate = moment().format("DD-MM-YYYY");
 
   //save metadata in an array for the database entry
   const params = [
@@ -110,6 +110,26 @@ function createFolder(macBookUsbPasth, folderName) {
     if (!fs.existsSync(directory)) {
       fs.mkdirSync(directory);
       console.log(`${directory} wurde erstellt`);
+
+      //save metadata in an array for the database entry
+      const params = [
+        folderName,
+        "folder",
+        0,
+        macBookUsbPasth + "/" + folderName,
+        currentDate,
+      ];
+
+      db.run(
+        "INSERT INTO files (filename, filetype, filesize, filepath, date) VALUES (?, ?, ?, ?, ?)",
+        params,
+        (err) => {
+          if (err) {
+            console.log(`Error to upload metadata: ${err}`);
+          }
+        }
+      );
+
       message = `Der Ordner ${directory} wurde erfolgreich erstellt.`;
     } else {
       message = `Der Ordner ${directory} exisitiert bereits`;

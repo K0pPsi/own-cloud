@@ -1,1 +1,24 @@
+.custom-table {
+  background-color: #f0eeee; /* Leicht grauer Hintergrund */
+  border-radius: 8px; /* Abgerundete Ecken */
+  padding: 20px;
+}
 
+.table {
+  background-color: white; /* Weiße Tabelle */
+  border-radius: 8px; /* Abgerundete Ecken */
+  overflow: hidden; /* Verhindert Überlauf bei abgerundeten Ecken */
+}
+
+.table th {
+  background-color: #f1f1f1; /* Hintergrund für Kopfzeile */
+  color: #5f6368; /* Textfarbe */
+}
+
+.table tbody tr:hover {
+  background-color: #e9ecef; /* Hover-Farbe für Zeilen */
+}
+
+.btn {
+  border-radius: 4px; /* Runde Ecken für Buttons */
+}

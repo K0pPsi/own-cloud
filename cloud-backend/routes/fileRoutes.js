@@ -5,7 +5,7 @@ const multer = require("multer");
 const fs = require("fs-extra");
 
 //dev path for macbook
-const macBookUsbPasth = "/Volumes/Cloud";
+const macBookUsbPasth = "/Volumes/Cloud/Home";
 //storagepath
 const upload = multer({
   dest: macBookUsbPasth,
