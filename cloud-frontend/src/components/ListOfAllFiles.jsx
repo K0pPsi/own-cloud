@@ -3,6 +3,9 @@ import axios from "axios";
 import { saveAs } from "file-saver";
 import "bootstrap/dist/css/bootstrap.min.css";
 import RenameModal from "./modal/RenameModal";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFolder, faFile } from "@fortawesome/free-solid-svg-icons";
+
 import "../styles/ListOfAllFiles.css"; // Neue CSS-Datei
 
 const ListOfAllFiles = ({ uploadCount }) => {
@@ -71,7 +74,7 @@ const ListOfAllFiles = ({ uploadCount }) => {
         <table className="table table-hover">
           <thead>
             <tr>
-              <th scope="col">Dateiname</th>
+              <th scope="col">Name</th>
               <th scope="col">Hochgeladen am</th>
               <th className="text-center" scope="col">
                 Aktionen
@@ -81,7 +84,13 @@ const ListOfAllFiles = ({ uploadCount }) => {
           <tbody>
             {files.map((file) => (
               <tr key={file.id}>
-                <td>{file.filename}</td>
+                <td>
+                  <FontAwesomeIcon
+                    icon={file.filetype === "folder" ? faFolder : faFile}
+                    className="me-2"
+                  />
+                  {file.filename}
+                </td>
                 <td>{file.date}</td>
                 <td className="text-center">
                   <button
