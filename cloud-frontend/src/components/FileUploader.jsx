@@ -3,7 +3,7 @@ import axios from "axios";
 import "../styles/FileUploader.css";
 import CreateFolderModal from "./modal/CreateFolderModal";
 
-const FileUploader = ({ onUploadSuccess }) => {
+const FileUploader = ({ onUploadSuccess, currentPath }) => {
   const [uploading, setUploading] = useState(false);
 
   const handleUpload = async (e) => {
@@ -14,11 +14,15 @@ const FileUploader = ({ onUploadSuccess }) => {
       const formData = new FormData();
       formData.append("file", file);
 
+      // Encode the current path to avoid issues with special characters
+      const encodedPath = encodeURIComponent(currentPath);
+
       const uploadResponse = await axios.post(
-        "http://localhost:3000/api/files/uploads",
+        `http://localhost:3000/api/files/uploads/${encodedPath}`,
         formData
       );
 
+      alert("currentPath: " + currentPath);
       alert(uploadResponse.data.message);
       onUploadSuccess();
       setUploading(false);

@@ -8,13 +8,17 @@ import { faFolder, faFile } from "@fortawesome/free-solid-svg-icons";
 
 import "../styles/ListOfAllFiles.css"; // Neue CSS-Datei
 
-const ListOfAllFiles = ({ uploadCount }) => {
+const ListOfAllFiles = ({ uploadCount, folderChange, currentPath }) => {
   const [files, setFiles] = useState([]);
   const [fileData, setFileData] = useState([]);
 
   const fetchFiles = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/api/files/list");
+      const response = await axios.get(
+        `http://localhost:3000/api/files/list/${encodeURIComponent(
+          currentPath
+        )}`
+      );
       setFiles(response.data.data);
     } catch (err) {
       console.error(`Error fetching files: ${err}`);
@@ -67,6 +71,21 @@ const ListOfAllFiles = ({ uploadCount }) => {
     setFileData(file);
   }
 
+  async function handleFolderClick(folderPath) {
+    alert(folderPath);
+    folderChange(folderPath + "/");
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/api/files/list/${encodeURIComponent(
+          folderPath + "/"
+        )}`
+      );
+
+      console.log(response.data.data);
+      setFiles(response.data.data);
+    } catch (error) {}
+  }
+
   return (
     <div className="container mt-4">
       <h4 className="mb-4">Alle Dateien:</h4>
@@ -89,7 +108,16 @@ const ListOfAllFiles = ({ uploadCount }) => {
                     icon={file.filetype === "folder" ? faFolder : faFile}
                     className="me-2"
                   />
-                  {file.filename}
+                  {file.filetype === "folder" ? (
+                    <span
+                      style={{ cursor: "pointer" }}
+                      onClick={() => handleFolderClick(file.filepath)}
+                    >
+                      {file.filename}
+                    </span>
+                  ) : (
+                    <span>{file.filename}</span>
+                  )}
                 </td>
                 <td>{file.date}</td>
                 <td className="text-center">

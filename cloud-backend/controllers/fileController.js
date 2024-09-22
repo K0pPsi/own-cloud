@@ -1,18 +1,20 @@
+const { rejects } = require("assert");
 const db = require("../db");
 const fs = require("fs-extra");
 const moment = require("moment");
 const path = require("path");
 const currentDate = moment().format("DD-MM-YYYY");
 
-function uploadSingleFile(fileData) {
+function uploadSingleFile(fileData, currentPath) {
   const fileType = fileData.originalname.split(".").pop();
+  const fullFilePath = `${currentPath}/${fileData.originalname}`;
 
   //save metadata in an array for the database entry
   const params = [
     fileData.originalname,
     fileType,
     fileData.size,
-    fileData.path,
+    fullFilePath,
     currentDate,
   ];
 
@@ -28,18 +30,43 @@ function uploadSingleFile(fileData) {
   );
 }
 
-//read all files from the database and return it
-function readAllData() {
+function getFilesInFolder(folderPath) {
   return new Promise((resolve, reject) => {
-    //select all files
-    db.all("SELECT * FROM files", [], (err, rows) => {
-      if (err) {
-        console.log(`Error cannot read files: ${err}`);
-        reject(err);
-      } else {
-        resolve(rows);
+    // Create the LIKE pattern to match all files and folders in the specified folder
+    const likePattern = `${folderPath}%`; // Matches everything in folderPath
+
+    // Create the NOT LIKE pattern to exclude files in subfolders
+    const notLikePattern = `${folderPath}%/%`; // Excludes anything in subfolders
+
+    db.all(
+      "SELECT * FROM files WHERE filepath LIKE ? AND filepath NOT LIKE ?",
+      [likePattern, notLikePattern],
+      (err, rows) => {
+        if (err) {
+          console.log(`Error cannot read files: ${err}`);
+          reject(err);
+        } else {
+          resolve(rows);
+        }
       }
-    });
+    );
+  });
+}
+
+//this function can be deleted when i tested all
+function getDataFromFolder(folderPath) {
+  return new Promise((resolve, reject) => {
+    db.all(
+      "SELECT * FROM files WHERE filepath LIKE ?",
+      [`${folderPath}/%`],
+      (err, rows) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(rows);
+        }
+      }
+    );
   });
 }
 
@@ -163,9 +190,10 @@ function createFolder(macBookUsbPasth, folderName) {
 
 module.exports = {
   uploadSingleFile,
-  readAllData,
+  getFilesInFolder,
   downloadData,
   deleteFile,
   renameFile,
   createFolder,
+  getDataFromFolder,
 };

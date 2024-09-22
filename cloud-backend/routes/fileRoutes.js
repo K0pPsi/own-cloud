@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const path = require("path");
 const fileController = require("../controllers/fileController");
 const multer = require("multer");
 const fs = require("fs-extra");
@@ -8,27 +9,58 @@ const archiver = require("archiver");
 //dev path for macbook
 const macBookUsbPasth = "/Volumes/Cloud/Home";
 //storagepath
-const upload = multer({
-  dest: macBookUsbPasth,
+// Funktion, um den Zielordner dynamisch festzulegen
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const currentPath = req.params.currentPath;
+    console.log("Insert path: " + currentPath);
+
+    // Hier den gewünschten Upload-Pfad anpassen
+    const dir = currentPath; // Direkt auf das USB-Laufwerk zeigen
+
+    // Überprüfe, ob der Zielordner existiert, wenn nicht, erstelle ihn
+    fs.mkdir(dir, { recursive: true }, (err) => {
+      if (err) {
+        console.error(`Error creating directory: ${err}`);
+        return cb(err); // Fehler an multer zurückgeben
+      }
+      console.log(`Upload directory created or exists: ${dir}`);
+      cb(null, dir); // Zielordner an multer zurückgeben
+    });
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname); // Du kannst hier auch den Dateinamen ändern
+  },
 });
 
-//route to upload single file
-router.post("/uploads", upload.single("file"), async (req, res) => {
-  //save file data from client
-  const fileData = req.file;
+// Initialisiere multer mit der benutzerdefinierten Storage Engine
+const upload = multer({ storage });
 
-  try {
-    await fileController.uploadSingleFile(fileData);
-    res.json({ success: true, message: "uploaded successfully" });
-  } catch (err) {
-    console.log(`Error to upload file ${err}`);
+router.post(
+  "/uploads/:currentPath",
+  upload.single("file"),
+  async (req, res) => {
+    const fileData = req.file;
+    const currentPath = req.params.currentPath;
+
+    console.log(`Current path: ${currentPath}`);
+
+    try {
+      await fileController.uploadSingleFile(fileData, currentPath);
+      res.json({ success: true, message: "Uploaded successfully" });
+    } catch (err) {
+      console.log(`Error uploading file: ${err}`);
+      res.status(500).json({ success: false, message: "Error uploading file" });
+    }
   }
-});
+);
 
-//route to get all files information from the database
-router.get("/list", async (req, res) => {
+//route to get all files and folder from current path
+router.get("/list/:currentPath", async (req, res) => {
+  const folderPath = req.params.currentPath;
+  console.log(folderPath);
   try {
-    const response = await fileController.readAllData();
+    const response = await fileController.getFilesInFolder(folderPath);
     res.json({ success: true, data: response });
   } catch (err) {
     console.error(`Error fetching data: ${err}`);
@@ -36,6 +68,19 @@ router.get("/list", async (req, res) => {
       //500 = server error
       .status(500)
       .json({ success: false, message: "Error querying the database" });
+  }
+});
+
+router.get("/list/:folderpath", async (req, res) => {
+  const folderPath = req.params.folderpath;
+
+  console.log(folderPath);
+  try {
+    const response = await fileController.getFilesInFolder(folderPath);
+    console.log("response: " + response);
+    res.json({ success: true, data: response });
+  } catch (err) {
+    console.log(`Error fetching data: ${err}`);
   }
 });
 

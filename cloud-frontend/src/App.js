@@ -5,17 +5,29 @@ import NavBar from "./components/NavBar";
 
 const App = () => {
   const [uploadCount, setUploadCount] = useState(0);
+  const [currentPath, setCurrentPath] = useState("/Volumes/Cloud/Home/");
 
   //increase the upload variable and the useEffect is running
   const handleUploadSuccess = () => {
     setUploadCount((prevCount) => prevCount + 1);
   };
 
+  const handleFolderChange = (newPath) => {
+    setCurrentPath(newPath);
+  };
+
   return (
     <div>
       <NavBar />
-      <FileUploader onUploadSuccess={handleUploadSuccess} />
-      <ListOfAllFiles uploadCount={uploadCount} />
+      <FileUploader
+        onUploadSuccess={handleUploadSuccess}
+        currentPath={currentPath}
+      />
+      <ListOfAllFiles
+        uploadCount={uploadCount}
+        folderChange={handleFolderChange}
+        currentPath={currentPath}
+      />
     </div>
   );
 };
