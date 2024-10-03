@@ -3,22 +3,22 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import axios from "axios";
 import { useState } from "react";
 
-const CreateFolderModal = ({ onUploadSuccess }) => {
+const CreateFolderModal = ({ onUploadSuccess, currentPath }) => {
   const [folderName, setFolderName] = useState("");
 
-  const handleSave = async () => {
-    console.log("Ordnername:", folderName);
+  const handleSaveBtn = async () => {
     const response = await axios.post(
-      "http://localhost:3000/api/files/create",
+      "http://localhost:3000/api/files/createFolder",
       {
         params: {
           folderName: folderName,
+          currentPath: currentPath,
         },
       }
     );
 
     onUploadSuccess(); // Refreshes the view of files and folders to ensure all new data is displayed.
-    console.log(response);
+    console.log(response.data.message); //create an modal Folder for the message
   };
 
   const handleInputChange = (event) => {
@@ -66,7 +66,7 @@ const CreateFolderModal = ({ onUploadSuccess }) => {
             <button
               type="button"
               className="btn btn-primary"
-              onClick={handleSave}
+              onClick={handleSaveBtn}
               data-bs-dismiss="modal"
             >
               Speichern

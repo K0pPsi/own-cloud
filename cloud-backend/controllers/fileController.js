@@ -5,9 +5,9 @@ const moment = require("moment");
 const path = require("path");
 const currentDate = moment().format("DD-MM-YYYY");
 
-function uploadSingleFile(fileData, currentPath) {
+function uploadSingleFile(fileData, currentViewPath, localFileName) {
   const fileType = fileData.originalname.split(".").pop();
-  const fullFilePath = `${currentPath}/${fileData.originalname}`;
+  const fullFilePath = `${currentViewPath}${fileData.originalname}`;
 
   //save metadata in an array for the database entry
   const params = [
@@ -16,11 +16,12 @@ function uploadSingleFile(fileData, currentPath) {
     fileData.size,
     fullFilePath,
     currentDate,
+    localFileName,
   ];
 
   //insert metadata into the database
   db.run(
-    "INSERT INTO files (filename, filetype, filesize, filepath, date) VALUES (?, ?, ?, ?, ?)",
+    "INSERT INTO files (filename, filetype, filesize, filepath, date, localFilePath) VALUES (?, ?, ?, ?, ?, ?)",
     params,
     (err) => {
       if (err) {
@@ -32,18 +33,27 @@ function uploadSingleFile(fileData, currentPath) {
 
 function getFilesInFolder(folderPath) {
   return new Promise((resolve, reject) => {
-    // Create the LIKE pattern to match all files and folders in the specified folder
-    const likePattern = `${folderPath}%`; // Matches everything in folderPath
+    // Sicherstellen, dass der Ordnerpfad mit einem Slash endet
+    if (!folderPath.endsWith("/")) {
+      folderPath += "/";
+    }
 
-    // Create the NOT LIKE pattern to exclude files in subfolders
-    const notLikePattern = `${folderPath}%/%`; // Excludes anything in subfolders
+    console.log(folderPath);
+    // LIKE-Muster, um alle Dateien und Ordner im aktuellen Ordner zu finden
+    const likePattern = `${folderPath}%`;
+
+    // Diese Bedingung stellt sicher, dass es keine weiteren '/' im Pfad gibt,
+    // damit nur Dateien und Ordner direkt in folderPath gefunden werden
+    const depthCondition = `instr(substr(filepath, length(?) + 1), '/') = 0`;
 
     db.all(
-      "SELECT * FROM files WHERE filepath LIKE ? AND filepath NOT LIKE ?",
-      [likePattern, notLikePattern],
+      `SELECT * FROM files 
+       WHERE filepath LIKE ? 
+       AND ${depthCondition}`,
+      [likePattern, folderPath],
       (err, rows) => {
         if (err) {
-          console.log(`Error cannot read files: ${err}`);
+          console.log(`Error: ${err}`);
           reject(err);
         } else {
           resolve(rows);
@@ -70,16 +80,16 @@ function getDataFromFolder(folderPath) {
   });
 }
 
-async function deleteFile(id, filepath, filetype) {
+async function deleteFile(id, filepath, filetype, localFilePath) {
   try {
     // Checks if the file path exists and is accessible
-    await fs.access(filepath);
+    //await fs.access(localFilePath);
 
     // delete folder or file
     if (filetype === "folder") {
       await fs.rm(filepath, { recursive: true, force: true });
     } else {
-      await fs.unlink(filepath);
+      await fs.unlink(localFilePath);
     }
     console.log(
       `${
@@ -119,7 +129,9 @@ function downloadData(id) {
     //select file via id
     db.all("SELECT * From files WHERE id = ? ", [id], (err, rows) => {
       if (err) {
-        console.log("ERROR: " + err);
+        reject(
+          `Error to get the file or folder with the id ${id}. Error: ${err}`
+        );
       } else {
         resolve(rows);
       }
@@ -146,29 +158,30 @@ function renameFile(newFileName, fileId) {
 }
 
 //create a new folder on the storage
-function createFolder(macBookUsbPasth, folderName) {
+function createFolder(currentPath, folderName) {
   let message;
 
   //set the whole path
-  const directory = path.join(macBookUsbPasth, folderName);
+  const directory = path.join(currentPath, folderName);
 
   try {
     //check if the folder already exists
     if (!fs.existsSync(directory)) {
       fs.mkdirSync(directory);
-      console.log(`${directory} wurde erstellt`);
+      console.log(`${folderName} wurde im Pfad ${directory} erstellt`);
 
       //save metadata in an array for the database entry
       const params = [
         folderName,
-        "folder",
-        0,
-        macBookUsbPasth + "/" + folderName,
+        "folder", //type=folder
+        0, //memory size
+        directory,
         currentDate,
+        directory,
       ];
 
       db.run(
-        "INSERT INTO files (filename, filetype, filesize, filepath, date) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO files (filename, filetype, filesize, filepath, date, localFilePath) VALUES (?, ?, ?, ?, ?, ?)",
         params,
         (err) => {
           if (err) {
@@ -177,15 +190,33 @@ function createFolder(macBookUsbPasth, folderName) {
         }
       );
 
-      message = `Der Ordner ${directory} wurde erfolgreich erstellt.`;
+      message = `Der Ordner ${folderName} mit dem Pfad ${currentPath} wurde erfolgreich erstellt.`;
     } else {
-      message = `Der Ordner ${directory} exisitiert bereits`;
+      message = `Der Ordner ${folderName} mit dem Pfad ${currentPath} exisitiert bereits`;
     }
-  } catch (error) {
-    console.log(error);
+  } catch (err) {
+    console.log(`Error to create folder: ${err}`);
   }
-
   return message;
+}
+
+function getAllFilesFromFolder(filepath) {
+  filepath = filepath + "/%";
+  return new Promise((resolve, rejects) => {
+    db.all(
+      "SELECT * FROM files WHERE filepath LIKE ?",
+      [filepath],
+      (err, rows) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          console.log(`get all files from folder: ${rows}`);
+          resolve(rows);
+        }
+      }
+    );
+  });
 }
 
 module.exports = {
@@ -196,4 +227,5 @@ module.exports = {
   renameFile,
   createFolder,
   getDataFromFolder,
+  getAllFilesFromFolder,
 };

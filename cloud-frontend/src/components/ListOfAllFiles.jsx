@@ -27,13 +27,20 @@ const ListOfAllFiles = ({ uploadCount, folderChange, currentPath }) => {
 
   useEffect(() => {
     fetchFiles();
-  }, [uploadCount]);
+  }, [uploadCount, folderChange]);
 
-  async function handleDeleteButton(id, filename, filepath, filetype) {
+  async function handleDeleteButton(
+    id,
+    filename,
+    filepath,
+    filetype,
+    localFilePath
+  ) {
+    alert(localFilePath);
     try {
       const response = await axios.delete(
         `http://localhost:3000/api/files/delete/${id}`,
-        { params: { filepath, filetype } }
+        { params: { filepath, filetype, localFilePath } }
       );
 
       alert(`${filename} ${response.data.message}`);
@@ -44,11 +51,11 @@ const ListOfAllFiles = ({ uploadCount, folderChange, currentPath }) => {
     }
   }
 
-  async function handleDownloadButton(id, filename, filetype) {
+  async function handleDownloadButton(id, filename, filetype, filepath) {
     try {
       const response = await axios.get(
         `http://localhost:3000/api/files/download/${id}`,
-        { responseType: "blob" }
+        { responseType: "blob", params: { filepath } } //blob = binary data
       );
 
       const blob = new Blob([response.data], {
@@ -58,10 +65,10 @@ const ListOfAllFiles = ({ uploadCount, folderChange, currentPath }) => {
             : "application/octet-stream",
       });
 
-      const url = window.URL.createObjectURL(blob);
+      const temporaryUrl = window.URL.createObjectURL(blob);
       // If it's a folder, save as .zip, otherwise use the file's original name
       const extension = filetype === "folder" ? ".zip" : "";
-      saveAs(url, `${filename}${extension}`);
+      saveAs(temporaryUrl, `${filename}${extension}`);
     } catch (err) {
       console.error(`Error downloading file: ${err}`);
     }
@@ -72,7 +79,6 @@ const ListOfAllFiles = ({ uploadCount, folderChange, currentPath }) => {
   }
 
   async function handleFolderClick(folderPath) {
-    alert(folderPath);
     folderChange(folderPath + "/");
     try {
       const response = await axios.get(
@@ -80,15 +86,65 @@ const ListOfAllFiles = ({ uploadCount, folderChange, currentPath }) => {
           folderPath + "/"
         )}`
       );
-
-      console.log(response.data.data);
       setFiles(response.data.data);
-    } catch (error) {}
+    } catch (err) {
+      console.log(err);
+    }
   }
+
+  // Extract the path after "Home/"
+  const basePath = "/Volumes/Cloud/Home";
+  const relativePath = currentPath.replace(basePath, ""); // Strip out the base path
+
+  // Split the relative path into parts for breadcrumbs
+  const pathParts = relativePath.split("/").filter(Boolean); //pathParts = Array
+
+  // Handle breadcrumb click
+  const handleBreadcrumbClick = (index) => {
+    // Rebuild the path based on the clicked breadcrumb
+    const newPath =
+      basePath + "/" + pathParts.slice(0, index + 1).join("/") + "/";
+    folderChange(newPath); // Navigate to the clicked path
+  };
+
+  // Render breadcrumbs
+  const renderBreadcrumbs = () => {
+    return (
+      <nav aria-label="breadcrumb">
+        <ol className="breadcrumb">
+          <li
+            className="breadcrumb-item"
+            style={{ cursor: "pointer" }}
+            onClick={() => handleFolderClick(basePath)}
+          >
+            Home
+          </li>
+          {/* Called only when the pathParts array contains elements */}
+          {pathParts.map((part, index) => (
+            <li
+              key={index}
+              className={`breadcrumb-item ${
+                index === pathParts.length - 1 ? "active" : ""
+              }`}
+              style={{
+                cursor: index !== pathParts.length - 1 ? "pointer" : "default",
+              }}
+              onClick={() =>
+                index !== pathParts.length - 1 && handleBreadcrumbClick(index)
+              }
+              aria-current={index === pathParts.length - 1 ? "page" : undefined}
+            >
+              {part}
+            </li>
+          ))}
+        </ol>
+      </nav>
+    );
+  };
 
   return (
     <div className="container mt-4">
-      <h4 className="mb-4">Alle Dateien:</h4>
+      {renderBreadcrumbs()} {/* Breadcrumb navigation */}
       <div className="table-responsive custom-table">
         <table className="table table-hover">
           <thead>
@@ -129,7 +185,8 @@ const ListOfAllFiles = ({ uploadCount, folderChange, currentPath }) => {
                         file.id,
                         file.filename,
                         file.filepath,
-                        file.filetype
+                        file.filetype,
+                        file.localFilePath
                       )
                     }
                   >
@@ -142,7 +199,8 @@ const ListOfAllFiles = ({ uploadCount, folderChange, currentPath }) => {
                       handleDownloadButton(
                         file.id,
                         file.filename,
-                        file.filetype
+                        file.filetype,
+                        file.filepath
                       )
                     }
                   >
