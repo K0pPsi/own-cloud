@@ -1,11 +1,15 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/NavBar.css";
 
-const NavBar = () => {
+const NavBar = ({ folderChange }) => {
+  function handleClickHome() {
+    folderChange("/Volumes/Cloud/Home/");
+  }
+
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
       <div className="container">
-        <a className="navbar-brand" href="#">
+        <a className="navbar-brand" href="#" onClick={handleClickHome}>
           <span className="logo">Own-Cloud</span>
         </a>
         <button
@@ -22,7 +26,8 @@ const NavBar = () => {
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav me-auto">
             <li className="nav-item">
-              <a className="nav-link" href="#">
+              <a className="nav-link" href="#" onClick={handleClickHome}>
+                {" "}
                 Meine Dateien
               </a>
             </li>

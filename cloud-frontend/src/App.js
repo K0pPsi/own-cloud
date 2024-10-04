@@ -18,7 +18,7 @@ const App = () => {
 
   return (
     <div>
-      <NavBar />
+      <NavBar folderChange={handleFolderChange} />
       <FileUploader
         onUploadSuccess={handleUploadSuccess}
         currentPath={currentPath}
