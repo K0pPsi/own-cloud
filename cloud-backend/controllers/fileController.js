@@ -9,11 +9,13 @@ function uploadSingleFile(fileData, currentViewPath, localFileName) {
   const fileType = fileData.originalname.split(".").pop();
   const fullFilePath = `${currentViewPath}${fileData.originalname}`;
 
+  const formatSize = formatFileSize(fileData.size);
+
   //save metadata in an array for the database entry
   const params = [
     fileData.originalname,
     fileType,
-    fileData.size,
+    formatSize,
     fullFilePath,
     currentDate,
     localFileName,
@@ -174,7 +176,7 @@ function createFolder(currentPath, folderName) {
       const params = [
         folderName,
         "folder", //type=folder
-        0, //memory size
+        "-", //memory size
         directory,
         currentDate,
         directory,
@@ -217,6 +219,18 @@ function getAllFilesFromFolder(filepath) {
       }
     );
   });
+}
+
+function formatFileSize(size) {
+  const units = ["Bytes", "KB", "MB", "GB", "TB"];
+  let index = 0;
+
+  while (size >= 1024 && index < units.length - 1) {
+    size /= 1024;
+    index++;
+  }
+
+  return `${size.toFixed(2)} ${units[index]}`;
 }
 
 module.exports = {

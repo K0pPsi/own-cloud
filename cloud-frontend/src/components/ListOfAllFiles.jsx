@@ -4,9 +4,15 @@ import { saveAs } from "file-saver";
 import "bootstrap/dist/css/bootstrap.min.css";
 import RenameModal from "./modal/RenameModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFolder, faFile } from "@fortawesome/free-solid-svg-icons";
+import {
+  faFolder,
+  faFile,
+  faTrash,
+  faDownload,
+  faEdit,
+} from "@fortawesome/free-solid-svg-icons";
 
-import "../styles/ListOfAllFiles.css"; // Neue CSS-Datei
+import "../styles/ListOfAllFiles.css";
 
 const ListOfAllFiles = ({ uploadCount, folderChange, currentPath }) => {
   const [files, setFiles] = useState([]);
@@ -110,33 +116,40 @@ const ListOfAllFiles = ({ uploadCount, folderChange, currentPath }) => {
   // Render breadcrumbs
   const renderBreadcrumbs = () => {
     return (
-      <nav aria-label="breadcrumb">
-        <ol className="breadcrumb">
+      <nav aria-label="breadcrumb" className="container ">
+        <ol className="breadcrumb bg-white shadow-sm p-3 mb-4 rounded">
           <li
             className="breadcrumb-item"
             style={{ cursor: "pointer" }}
             onClick={() => handleFolderClick(basePath)}
           >
-            Home
+            <a className="text-decoration-none text-primary">Home</a>
           </li>
-          {/* Called only when the pathParts array contains elements */}
-          {pathParts.map((part, index) => (
-            <li
-              key={index}
-              className={`breadcrumb-item ${
-                index === pathParts.length - 1 ? "active" : ""
-              }`}
-              style={{
-                cursor: index !== pathParts.length - 1 ? "pointer" : "default",
-              }}
-              onClick={() =>
-                index !== pathParts.length - 1 && handleBreadcrumbClick(index)
-              }
-              aria-current={index === pathParts.length - 1 ? "page" : undefined}
-            >
-              {part}
-            </li>
-          ))}
+          {pathParts.length > 0 &&
+            pathParts.map((part, index) => (
+              <li
+                key={index}
+                className={`breadcrumb-item ${
+                  index === pathParts.length - 1 ? "active" : ""
+                }`}
+                style={{
+                  cursor:
+                    index !== pathParts.length - 1 ? "pointer" : "default",
+                }}
+                onClick={() =>
+                  index !== pathParts.length - 1 && handleBreadcrumbClick(index)
+                }
+                aria-current={
+                  index === pathParts.length - 1 ? "page" : undefined
+                }
+              >
+                {index === pathParts.length - 1 ? (
+                  <span className="text-muted">{part}</span> // Active part in gray
+                ) : (
+                  <a className="text-decoration-none text-primary">{part}</a> // Clickable parts in blue
+                )}
+              </li>
+            ))}
         </ol>
       </nav>
     );
@@ -150,10 +163,9 @@ const ListOfAllFiles = ({ uploadCount, folderChange, currentPath }) => {
           <thead>
             <tr>
               <th scope="col">Name</th>
-              <th scope="col">Hochgeladen am</th>
-              <th className="text-center" scope="col">
-                Aktionen
-              </th>
+              <th scope="col">Zuletzt geändert</th>
+              <th scope="col">Dateigröße</th>
+              <th className="text-center" scope="col"></th>
             </tr>
           </thead>
           <tbody>
@@ -162,7 +174,7 @@ const ListOfAllFiles = ({ uploadCount, folderChange, currentPath }) => {
                 <td>
                   <FontAwesomeIcon
                     icon={file.filetype === "folder" ? faFolder : faFile}
-                    className="me-2"
+                    className="me-3"
                   />
                   {file.filetype === "folder" ? (
                     <span
@@ -176,45 +188,55 @@ const ListOfAllFiles = ({ uploadCount, folderChange, currentPath }) => {
                   )}
                 </td>
                 <td>{file.date}</td>
+                <td>{file.filesize}</td>
                 <td className="text-center">
-                  <button
-                    type="button"
-                    className="btn btn-danger me-2"
-                    onClick={() =>
-                      handleDeleteButton(
-                        file.id,
-                        file.filename,
-                        file.filepath,
-                        file.filetype,
-                        file.localFilePath
-                      )
-                    }
-                  >
-                    Löschen
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-warning me-2"
-                    onClick={() =>
-                      handleDownloadButton(
-                        file.id,
-                        file.filename,
-                        file.filetype,
-                        file.filepath
-                      )
-                    }
-                  >
-                    Herunterladen
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => handleRenameButton(file)}
-                    data-bs-toggle="modal"
-                    data-bs-target="#renameModal"
-                  >
-                    Umbenennen
-                  </button>
+                  <div className="action-buttons">
+                    <button
+                      type="button"
+                      className="btn btn-danger btn-sm me-2"
+                      title="Löschen"
+                      onClick={() =>
+                        handleDeleteButton(
+                          file.id,
+                          file.filename,
+                          file.filepath,
+                          file.filetype,
+                          file.localFilePath
+                        )
+                      }
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </div>
+                  <div className="action-buttons">
+                    <button
+                      type="button"
+                      className="btn btn-warning btn-sm me-2"
+                      title="Download"
+                      onClick={() =>
+                        handleDownloadButton(
+                          file.id,
+                          file.filename,
+                          file.filetype,
+                          file.filepath
+                        )
+                      }
+                    >
+                      <FontAwesomeIcon icon={faDownload} />
+                    </button>
+                  </div>
+                  <div className="action-buttons">
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      title="Umbennen"
+                      onClick={() => handleRenameButton(file)}
+                      data-bs-toggle="modal"
+                      data-bs-target="#renameModal"
+                    >
+                      <FontAwesomeIcon icon={faEdit} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

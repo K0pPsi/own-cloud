@@ -2,6 +2,7 @@ import ListOfAllFiles from "./components/ListOfAllFiles";
 import React, { useState } from "react";
 import FileUploader from "./components/FileUploader";
 import NavBar from "./components/NavBar";
+import "./styles/App.css";
 
 const App = () => {
   const [uploadCount, setUploadCount] = useState(0);

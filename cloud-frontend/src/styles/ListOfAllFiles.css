@@ -1,5 +1,8 @@
+body {
+  background-color: white;
+}
+
 .custom-table {
-  background-color: #fefefe; /* Leicht grauer Hintergrund */
   border-radius: 8px; /* Abgerundete Ecken */
   padding: 20px;
 }
@@ -11,7 +14,6 @@
 }
 
 .table th {
-  background-color: #f1f1f1; /* Hintergrund für Kopfzeile */
   color: #5f6368; /* Textfarbe */
 }
 
@@ -19,6 +21,17 @@
   background-color: #e9ecef; /* Hover-Farbe für Zeilen */
 }
 
-.btn {
-  border-radius: 4px; /* Runde Ecken für Buttons */
+/* Verstecke die Aktions-Buttons standardmäßig */
+table tbody tr .action-buttons {
+  visibility: hidden;
+  display: inline-block;
+}
+
+/* Zeige die Aktions-Buttons, wenn über die Zeile gehovered wird */
+table tbody tr:hover .action-buttons {
+  visibility: inherit;
+}
+
+.icon-size {
+  font-size: large;
 }
