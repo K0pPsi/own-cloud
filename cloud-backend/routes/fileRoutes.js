@@ -41,6 +41,7 @@ router.post(
 //route to get all files and folder from current path
 router.get("/list/:currentPath", async (req, res) => {
   const folderPath = req.params.currentPath;
+  console.log(folderPath);
 
   try {
     const response = await fileController.getFilesInFolder(folderPath);

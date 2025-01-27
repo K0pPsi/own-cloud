@@ -36,11 +36,6 @@ const NavBar = ({ folderChange }) => {
                 Papierkorb
               </a>
             </li>
-            <li className="nav-item">
-              <a className="nav-link" href="#">
-                Einstellungen
-              </a>
-            </li>
           </ul>
         </div>
       </div>

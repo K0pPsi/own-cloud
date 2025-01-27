@@ -2,6 +2,7 @@ import ListOfAllFiles from "./components/ListOfAllFiles";
 import React, { useState } from "react";
 import FileUploader from "./components/FileUploader";
 import NavBar from "./components/NavBar";
+import Footer from "./components/Footer";
 import "./styles/App.css";
 
 const App = () => {
@@ -29,6 +30,7 @@ const App = () => {
         folderChange={handleFolderChange}
         currentPath={currentPath}
       />
+      <Footer />
     </div>
   );
 };

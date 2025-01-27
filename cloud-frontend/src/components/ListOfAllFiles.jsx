@@ -17,6 +17,8 @@ import "../styles/ListOfAllFiles.css";
 const ListOfAllFiles = ({ uploadCount, folderChange, currentPath }) => {
   const [files, setFiles] = useState([]);
   const [fileData, setFileData] = useState([]);
+  console.log("hallo");
+  console.log(currentPath);
 
   const fetchFiles = async () => {
     try {
@@ -42,7 +44,6 @@ const ListOfAllFiles = ({ uploadCount, folderChange, currentPath }) => {
     filetype,
     localFilePath
   ) {
-    alert(localFilePath);
     try {
       const response = await axios.delete(
         `http://localhost:3000/api/files/delete/${id}`,
