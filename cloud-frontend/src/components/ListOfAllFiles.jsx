@@ -17,8 +17,6 @@ import "../styles/ListOfAllFiles.css";
 const ListOfAllFiles = ({ uploadCount, folderChange, currentPath }) => {
   const [files, setFiles] = useState([]);
   const [fileData, setFileData] = useState([]);
-  console.log("hallo");
-  console.log(currentPath);
 
   const fetchFiles = async () => {
     try {
