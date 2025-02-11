@@ -4,6 +4,7 @@ import { saveAs } from "file-saver";
 import "bootstrap/dist/css/bootstrap.min.css";
 import RenameModal from "./modal/RenameModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Swal from "sweetalert2";
 import {
   faFolder,
   faFile,
@@ -11,13 +12,13 @@ import {
   faDownload,
   faEdit,
 } from "@fortawesome/free-solid-svg-icons";
-
 import "../styles/ListOfAllFiles.css";
 
 const ListOfAllFiles = ({ uploadCount, folderChange, currentPath }) => {
   const [files, setFiles] = useState([]);
   const [fileData, setFileData] = useState([]);
 
+  // Fetch files from server
   const fetchFiles = async () => {
     try {
       const response = await axios.get(
@@ -35,6 +36,7 @@ const ListOfAllFiles = ({ uploadCount, folderChange, currentPath }) => {
     fetchFiles();
   }, [uploadCount, folderChange]);
 
+  // Handle file deletion
   async function handleDeleteButton(
     id,
     filename,
@@ -43,24 +45,38 @@ const ListOfAllFiles = ({ uploadCount, folderChange, currentPath }) => {
     localFilePath
   ) {
     try {
-      const response = await axios.delete(
-        `http://localhost:3000/api/files/delete/${id}`,
-        { params: { filepath, filetype, localFilePath } }
-      );
+      await axios.delete(`http://localhost:3000/api/files/delete/${id}`, {
+        params: { filepath, filetype, localFilePath, filename },
+      });
 
-      alert(`${filename} ${response.data.message}`);
       fetchFiles();
-    } catch (err) {
-      console.log(err);
-      alert("Error deleting file");
+      Swal.fire({
+        title: `${filename} wurde gelöscht`,
+        icon: "success",
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+      });
+    } catch (e) {
+      console.log(e);
+      Swal.fire({
+        title: `${filename} konnte nicht gelöscht werden`,
+        icon: "error",
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+      });
     }
   }
 
+  // Handle file download
   async function handleDownloadButton(id, filename, filetype, filepath) {
     try {
       const response = await axios.get(
         `http://localhost:3000/api/files/download/${id}`,
-        { responseType: "blob", params: { filepath } } //blob = binary data
+        { responseType: "blob", params: { filepath } }
       );
 
       const blob = new Blob([response.data], {
@@ -71,7 +87,6 @@ const ListOfAllFiles = ({ uploadCount, folderChange, currentPath }) => {
       });
 
       const temporaryUrl = window.URL.createObjectURL(blob);
-      // If it's a folder, save as .zip, otherwise use the file's original name
       const extension = filetype === "folder" ? ".zip" : "";
       saveAs(temporaryUrl, `${filename}${extension}`);
     } catch (err) {
@@ -79,10 +94,12 @@ const ListOfAllFiles = ({ uploadCount, folderChange, currentPath }) => {
     }
   }
 
+  // Handle renaming file
   function handleRenameButton(file) {
     setFileData(file);
   }
 
+  // Handle folder click to change directory
   async function handleFolderClick(folderPath) {
     folderChange(folderPath + "/");
     try {
@@ -99,23 +116,22 @@ const ListOfAllFiles = ({ uploadCount, folderChange, currentPath }) => {
 
   // Extract the path after "Home/"
   const basePath = "/Volumes/Cloud/Home";
-  const relativePath = currentPath.replace(basePath, ""); // Strip out the base path
+  const relativePath = currentPath.replace(basePath, "");
 
   // Split the relative path into parts for breadcrumbs
-  const pathParts = relativePath.split("/").filter(Boolean); //pathParts = Array
+  const pathParts = relativePath.split("/").filter(Boolean);
 
   // Handle breadcrumb click
   const handleBreadcrumbClick = (index) => {
-    // Rebuild the path based on the clicked breadcrumb
     const newPath =
       basePath + "/" + pathParts.slice(0, index + 1).join("/") + "/";
-    folderChange(newPath); // Navigate to the clicked path
+    folderChange(newPath);
   };
 
   // Render breadcrumbs
   const renderBreadcrumbs = () => {
     return (
-      <nav aria-label="breadcrumb" className="container ">
+      <nav aria-label="breadcrumb" className="container">
         <ol className="breadcrumb bg-white shadow-sm p-3 mb-4 rounded">
           <li
             className="breadcrumb-item"

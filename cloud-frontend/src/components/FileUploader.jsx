@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import Swal from "sweetalert2";
 import "../styles/FileUploader.css";
 import CreateFolderModal from "./modal/CreateFolderModal";
 
@@ -17,13 +18,20 @@ const FileUploader = ({ onUploadSuccess, currentPath }) => {
       // Encode the current path to avoid issues with special characters
       const encodedPath = encodeURIComponent(currentPath);
 
-      const uploadResponse = await axios.post(
+      await axios.post(
         `http://localhost:3000/api/files/uploads/${encodedPath}`,
         formData
       );
 
-      alert("currentPath: " + currentPath);
-      alert(uploadResponse.data.message);
+      Swal.fire({
+        title: "Datei erfolgrech hochgeladen!",
+        icon: "success",
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+      });
+
       onUploadSuccess();
       setUploading(false);
     } catch (e) {

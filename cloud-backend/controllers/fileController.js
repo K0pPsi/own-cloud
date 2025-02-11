@@ -3,15 +3,17 @@ const db = require("../db");
 const fs = require("fs-extra");
 const moment = require("moment");
 const path = require("path");
+
 const currentDate = moment().format("DD-MM-YYYY");
+const trashPath = "/Volumes/Cloud/Papierkorb";
+
+//// ================= 📂 File-Functions ================= ////
 
 function uploadSingleFile(fileData, currentViewPath, localFileName) {
   const fileType = fileData.originalname.split(".").pop();
   const fullFilePath = `${currentViewPath}${fileData.originalname}`;
-
   const formatSize = formatFileSize(fileData.size);
 
-  //save metadata in an array for the database entry
   const params = [
     fileData.originalname,
     fileType,
@@ -21,7 +23,6 @@ function uploadSingleFile(fileData, currentViewPath, localFileName) {
     localFileName,
   ];
 
-  //insert metadata into the database
   db.run(
     "INSERT INTO files (filename, filetype, filesize, filepath, date, localFilePath) VALUES (?, ?, ?, ?, ?, ?)",
     params,
@@ -33,61 +34,8 @@ function uploadSingleFile(fileData, currentViewPath, localFileName) {
   );
 }
 
-function getFilesInFolder(folderPath) {
-  return new Promise((resolve, reject) => {
-    // Sicherstellen, dass der Ordnerpfad mit einem Slash endet
-    if (!folderPath.endsWith("/")) {
-      folderPath += "/";
-    }
-
-    console.log(folderPath);
-    // LIKE-Muster, um alle Dateien und Ordner im aktuellen Ordner zu finden
-    const likePattern = `${folderPath}%`;
-
-    // Diese Bedingung stellt sicher, dass es keine weiteren '/' im Pfad gibt,
-    // damit nur Dateien und Ordner direkt in folderPath gefunden werden
-    const depthCondition = `instr(substr(filepath, length(?) + 1), '/') = 0`;
-
-    db.all(
-      `SELECT * FROM files 
-       WHERE filepath LIKE ? 
-       AND ${depthCondition}`,
-      [likePattern, folderPath],
-      (err, rows) => {
-        if (err) {
-          console.log(`Error: ${err}`);
-          reject(err);
-        } else {
-          resolve(rows);
-        }
-      }
-    );
-  });
-}
-
-//this function can be deleted when i tested all
-function getDataFromFolder(folderPath) {
-  return new Promise((resolve, reject) => {
-    db.all(
-      "SELECT * FROM files WHERE filepath LIKE ?",
-      [`${folderPath}/%`],
-      (err, rows) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(rows);
-        }
-      }
-    );
-  });
-}
-
 async function deleteFile(id, filepath, filetype, localFilePath) {
   try {
-    // Checks if the file path exists and is accessible
-    //await fs.access(localFilePath);
-
-    // delete folder or file
     if (filetype === "folder") {
       await fs.rm(filepath, { recursive: true, force: true });
     } else {
@@ -99,17 +47,11 @@ async function deleteFile(id, filepath, filetype, localFilePath) {
       } ${filepath} successfully deleted`
     );
   } catch (error) {
-    console.error(
-      `Error deleting ${
-        filetype === "folder" ? "folder" : "file"
-      } ${filepath}:`,
-      error
-    );
+    console.error(`Error deleting ${filetype}: ${filepath}`, error);
     return;
   }
 
   try {
-    // delete database entry
     await new Promise((resolve, reject) => {
       db.run("DELETE FROM files WHERE ID = ?", [id], function (err) {
         if (err) {
@@ -125,58 +67,38 @@ async function deleteFile(id, filepath, filetype, localFilePath) {
   }
 }
 
-//select the desired file or folder and return it
-function downloadData(id) {
-  return new Promise((resolve, reject) => {
-    //select file via id
-    db.all("SELECT * From files WHERE id = ? ", [id], (err, rows) => {
-      if (err) {
-        reject(
-          `Error to get the file or folder with the id ${id}. Error: ${err}`
-        );
-      } else {
-        resolve(rows);
-      }
-    });
-  });
-}
-
-//select the desired file and change the name
 function renameFile(newFileName, fileId) {
   return new Promise((resolve, reject) => {
     db.run(
       "UPDATE files SET filename = ? WHERE id = ?",
       [newFileName, fileId],
-      (err, rows) => {
+      (err) => {
         if (err) {
           console.log(err);
           reject(err);
         } else {
-          resolve({ messsage: "succefully renmae the file" });
+          resolve({ message: "Successfully renamed the file" });
         }
       }
     );
   });
 }
 
-//create a new folder on the storage
+//// ================= 📁 Folder-Functions ================= ////
+
 function createFolder(currentPath, folderName) {
+  const directory = path.join(currentPath, folderName);
   let message;
 
-  //set the whole path
-  const directory = path.join(currentPath, folderName);
-
   try {
-    //check if the folder already exists
     if (!fs.existsSync(directory)) {
       fs.mkdirSync(directory);
       console.log(`${folderName} wurde im Pfad ${directory} erstellt`);
 
-      //save metadata in an array for the database entry
       const params = [
         folderName,
-        "folder", //type=folder
-        "-", //memory size
+        "folder",
+        "-",
         directory,
         currentDate,
         directory,
@@ -194,7 +116,7 @@ function createFolder(currentPath, folderName) {
 
       message = `Der Ordner ${folderName} mit dem Pfad ${currentPath} wurde erfolgreich erstellt.`;
     } else {
-      message = `Der Ordner ${folderName} mit dem Pfad ${currentPath} exisitiert bereits`;
+      message = `Der Ordner ${folderName} mit dem Pfad ${currentPath} existiert bereits`;
     }
   } catch (err) {
     console.log(`Error to create folder: ${err}`);
@@ -202,9 +124,34 @@ function createFolder(currentPath, folderName) {
   return message;
 }
 
+function getFilesInFolder(folderPath) {
+  return new Promise((resolve, reject) => {
+    if (!folderPath.endsWith("/")) {
+      folderPath += "/";
+    }
+
+    console.log(folderPath);
+    const likePattern = `${folderPath}%`;
+    const depthCondition = `instr(substr(filepath, length(?) + 1), '/') = 0`;
+
+    db.all(
+      `SELECT * FROM files WHERE filepath LIKE ? AND ${depthCondition}`,
+      [likePattern, folderPath],
+      (err, rows) => {
+        if (err) {
+          console.log(`Error: ${err}`);
+          reject(err);
+        } else {
+          resolve(rows);
+        }
+      }
+    );
+  });
+}
+
 function getAllFilesFromFolder(filepath) {
   filepath = filepath + "/%";
-  return new Promise((resolve, rejects) => {
+  return new Promise((resolve, reject) => {
     db.all(
       "SELECT * FROM files WHERE filepath LIKE ?",
       [filepath],
@@ -220,6 +167,75 @@ function getAllFilesFromFolder(filepath) {
     );
   });
 }
+
+//// ================= 🗑️ Trash ================= ////
+
+function moveIntoTrash(id, localFilePath, fileName) {
+  const localFileName = path.basename(localFilePath);
+  const onlyFileName = path.basename(fileName);
+
+  fs.rename(localFilePath, `${trashPath}/${localFileName}`, (e) => {
+    if (e) {
+      console.log(e);
+    }
+  });
+
+  db.all("UPDATE files SET localFilePath = ?, filepath = ? WHERE id = ?", [
+    `${trashPath}/${localFileName}`,
+    `${trashPath}/${onlyFileName}`,
+    id,
+  ]);
+}
+
+function getTrashFiles() {
+  return new Promise((resolve, reject) => {
+    db.all(
+      "SELECT * FROM files WHERE localFilePath LIKE ?",
+      [`${trashPath}/%`],
+      (err, rows) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          resolve(rows);
+        }
+      }
+    );
+  });
+}
+
+function recreateFile(id, localFilePath, filepath, fileName, macBookUsbPath) {
+  const localFileName = path.basename(localFilePath);
+  const onlyFileName = path.basename(fileName);
+
+  fs.rename(localFilePath, `${macBookUsbPath}/${localFileName}`, (e) => {
+    if (e) {
+      console.log(e);
+    }
+  });
+
+  db.all("UPDATE files SET localFilePath = ?, filepath = ? WHERE id = ?", [
+    `${macBookUsbPath}/${localFileName}`,
+    `${macBookUsbPath}/${onlyFileName}`,
+    id,
+  ]);
+}
+
+//// ================= 📥 File/Folder-Download ================= ////
+
+function downloadData(id) {
+  return new Promise((resolve, reject) => {
+    db.all("SELECT * FROM files WHERE id = ?", [id], (err, rows) => {
+      if (err) {
+        reject(`Error to get the file or folder with id ${id}: ${err}`);
+      } else {
+        resolve(rows);
+      }
+    });
+  });
+}
+
+//// ================= 🔧 File Size  ================= ////
 
 function formatFileSize(size) {
   const units = ["Bytes", "KB", "MB", "GB", "TB"];
@@ -240,6 +256,9 @@ module.exports = {
   deleteFile,
   renameFile,
   createFolder,
-  getDataFromFolder,
   getAllFilesFromFolder,
+  moveIntoTrash,
+  getTrashFiles,
+  recreateFile,
+  formatFileSize,
 };

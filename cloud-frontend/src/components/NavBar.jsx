@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/NavBar.css";
 
@@ -9,9 +10,9 @@ const NavBar = ({ folderChange }) => {
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
       <div className="container">
-        <a className="navbar-brand" href="#" onClick={handleClickHome}>
+        <Link className="navbar-brand" to="/" onClick={handleClickHome}>
           <span className="logo">Own-Cloud</span>
-        </a>
+        </Link>
         <button
           className="navbar-toggler"
           type="button"
@@ -26,15 +27,14 @@ const NavBar = ({ folderChange }) => {
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav me-auto">
             <li className="nav-item">
-              <a className="nav-link" href="#" onClick={handleClickHome}>
-                {" "}
+              <Link className="nav-link" to="/" onClick={handleClickHome}>
                 Meine Dateien
-              </a>
+              </Link>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="#">
+              <Link className="nav-link" to="/trash">
                 Papierkorb
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
